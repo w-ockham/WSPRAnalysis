@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<!------------------------------------------------------------------>
+<!-- Bootstrap core CSS -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.5.0/css/bootstrap.min.css" rel="stylesheet">
+<!-- Material Design Bootstrap -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/mdbootstrap/4.19.1/css/mdb.min.css" rel="stylesheet">
+<!------------------------------------------------------------------>
+<style>
+  .table-condensed > thead > tr > th,
+  .table-condensed > tbody > tr > th,
+  .table-condensed > tfoot > tr > th,
+  .table-condensed > thead > tr > td,
+  .table-condensed > tbody > tr > td,
+  .table-condensed > tfoot > tr > td {padding:2px;}
+</style>
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <title>WSPRnet SNR distribution</title>
+  </head>
+  <body>
+    <div class="header clearfix">
+      <div class="text-primary fw-bold bg-white shadow-lg rounded"><h5><a href="https://www.wsprnet.org/drupal/wsprnet/spots" target="_blank">WSPRnet</a> SNR distribution</h5>
+      </div>
+    </div>
+    <div class="container">
+      <div class = "text-center"><div id="spotimg"></div></div>
+      <form name="WSPRAnaly" method="post" onsubmit="return checkLog()" action='/cgi-bin/fleonline.py'>
+    	<div class="form-group" style="justify-content:start;margin-bottom:2px;">
+	  <label>Title:<input type="text" id="title" name="title" value="untitled"></label><p>
+	  <table class="table table-condensed">
+	    <thead>
+	      <tr>
+		<th width="auto">Plots </th>
+		<th width="auto">Color </th>
+		<th width="auto">From</th>
+		<th width="auto"> To </th>
+	      </tr>
+	    </thead>
+	    <tbody>
+	      <tr>
+		<td><div><input type="checkbox" id="check1" name="check1">
+		<input type="text" id="plot1" name="plot1"></div></td>
+		<td><div><select id="color1" name="color1">
+		      <option value="r">Red</option>
+		      <option value="b">Blue</option>
+		      <option value="g">Green</option>
+		      <option value="c">Cyan</option>
+		</div></td>
+		<td><div><select id="from1" name="from1">
+		</div></td>
+		<td><div><select id="to1" name="to1">
+		</div></td>
+	      </tr>
+	      <tr>
+		<td><div><input type="checkbox" id="check2" name="check2">
+		<input type="text" id="plot2" name="plot2"></div></td>
+		<td><div><select id="color2" name="color2">
+		      <option value="b">Blue</option>
+		      <option value="g">Green</option>
+		      <option value="c">Cyan</option>
+		      <option value="r">Red</option>
+		</div></td>
+		<td><div><select id="from2" name="from2">
+		</div></td>
+		<td><div><select id="to2" name="to2">
+		</div></td>
+	      </tr>
+	      <tr>
+		<td><div><input type="checkbox" id="check3" name="check3">
+		<input type="text" id="plot3" name="plot3"></div></td>
+		<td><div><select id="color3" name="color3">
+		      <option value="g">Green</option>
+		      <option value="c">Cyan</option>
+		      <option value="r">Red</option>
+		      <option value="b">Blue</option>
+		</div></td>
+		<td><div><select id="from3" name="from3">
+		</div></td>
+		<td><div><select id="to3" name="to3">
+		</div></td>
+	      </tr>
+	      <tr>
+		<td><div><input type="checkbox" id="check4" name="check4">
+		<input type="text" id="plot4" name="plot4"></div></td>
+		<td><div><select id="color4" name="color4">
+		      <option value="c">Cyan</option>
+		      <option value="r">Red</option>
+		      <option value="b">Blue</option>
+		      <option value="g">Green</option>
+		</div></td>
+		<td><div><select id="from4" name="from4">
+		</div></td>
+		<td><div><select id="to4" name="to4">
+		</div></td>
+	      </tr>
+
+	  </table>
+	</div>
+	<div class="form-group d-flex" style="justify-content:center;margin-bottom:2px;">
+	  <textarea class="form-control text-monospace" name="edittext" id="edittext" style="resize:none;font-size: 9pt;line-height: 10pt;margin-top:2pt;height:60vh"></textarea>
+	</div>
+	<div class="form-group">
+	  <div class="button-group d-flex" style="justify-content:space-around">
+	    <input id="loadfle" type="file" style="display:none">
+	    <button type="button" class="btn-sm btn-primary" 
+		    onClick="$('input[id=loadfle]').click()">Open</button>
+
+	    <button type="button" class="btn-sm btn-primary" 
+		    onClick="getTimelist()">Analyze</button>
+	    
+	    <button type="button" id="update" class="btn-info btn-sm" onClick="clearLog()">Clear</button>
+
+	    <button type="button" id="update" class="btn-info btn-sm" onClick="clickSubmit()">Draw</button>
+	    
+	  </div>
+	</div>
+      </form>
+    </div>
+</div><!-- end of tab-pane -->
+
+<!-- Optional JavaScript -->
+<!-- JQuery -->
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/js-cookie@rc/dist/js.cookie.min.js"></script>
+<!-- Bootstrap tooltips -->
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.4/umd/popper.min.js"></script>
+<!-- Bootstrap core JavaScript -->
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.5.0/js/bootstrap.min.js"></script>
+<!-- MDB core JavaScript -->
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mdbootstrap/4.19.1/js/mdb.min.js"></script>
+<!------------------------------------------------------------------------>
+<script>
+    
+$('input[id=loadfle]').change(function(e){
+    var result = e.target.files[0];
+    var reader = new FileReader();
+    reader.readAsText(result,'UTF-8');
+    $('input[id=loadfle]').val('');
+    reader.addEventListener('load', function() {
+	editor = document.getElementById("edittext")
+	editor.value = reader.result;
+	getTimelist();
+    })
+});
+
+function getTimelist(text) {
+    var editor = document.getElementById("edittext");
+    const wsprlog = editor.value.split('\n');
+
+    var tl = [];
+    var trimed = ""
+    
+    for (const line of wsprlog) {
+	var cols = line.trim().split(/[\t,\s]/);
+	if (/\d\d\d\d.+/.test(cols[0])) {
+	    tl.push(cols[0] + ' ' + cols[1]);
+	    trimed += cols.join(' ') + '\n';
+	}
+    }
+
+    let timeset = new Set(tl);
+    let timelist = Array.from(timeset);
+
+    editor.value = trimed;
+    var l = timelist.sort();
+    for (n = 1; n <=4 ; n++) {
+	for (const t of l) {
+	    const sel = document.getElementById('from'+n);
+	    const opt = document.createElement('option');
+	    const sel2 = document.getElementById('to'+n);
+	    const opt2 = document.createElement('option');
+	    opt.value = t;
+	    opt.textContent = t;
+	    sel.appendChild(opt);
+	    opt2.value = t;
+	    opt2.textContent = t;
+	    sel2.appendChild(opt2);
+	}
+    }
+}
+
+function checkLog() {
+    if (!textinterpreted) {
+	if(confirm("変換されていません\nCSV生成しますか？") == false)
+	    return false;
+    }
+    textdirty = false;
+    textinterpreted = true;
+    return true;
+}
+
+function clearLog() {
+    var editor = document.getElementById("edittext");
+    editor.value = "";
+    for (n = 1; n <=4 ; n++) {
+	const sel = document.getElementById('from'+n);
+	const sel2 = document.getElementById('to'+n);
+	const chk = document.getElementById('check'+n);
+	const plt = document.getElementById('plot'+n);
+	sel.innerHTML = '';
+	sel2.innerHTML = '';
+	chk.checked = false;
+	plt.value = '';
+	plt.textContent = '';
+    }
+    const elem = document.getElementById("spotimg");
+    elem.innerHTML = '';
+    const tl = document.getElementById("title");
+    tl.value = 'untitled';
+    tl.textContent = 'untitled';
+}
+
+  
+
+function string_to_buffer(src) {
+  return (new Uint16Array([].map.call(src, function(c) {
+    return c.charCodeAt(0)
+  }))).buffer;
+}
+
+function clickSubmit() {
+    var editor = document.getElementById("edittext");
+    var title = document.getElementById("title");
+    var jsondata ={'title':title.value,
+		   'width':window.innerWidth,
+		   'spots':editor.value,
+		   'plots':[]};
+
+    for(n = 1; n <= 4; n++) {
+	chk = document.getElementById('check'+n);
+	if (chk.checked) {
+	    label  = document.getElementById('plot'+n).value;
+	    color =document.getElementById('color'+n).value;
+	    from = document.getElementById('from'+n).value;
+	    to = document.getElementById('to'+n).value;
+	    jsondata['plots'].push(
+		{ 'label': label, 'color':color, 'from':from, 'to':to });
+	}
+    }
+
+    if (jsondata['plots'].length == 0) {
+	alert("No plots");
+	return;
+    }
+
+    $.post("/cgi-bin/wspr-analysis.py",{"arg":JSON.stringify(jsondata)},
+	   function(data, status, xhr) {
+	       if (status == "success") {
+		   const elem = document.getElementById("spotimg");
+		   elem.innerHTML = '';
+		   elem.appendChild(data.documentElement);
+	       }
+	   });
+}
+</script>
+</body>
+</html>
