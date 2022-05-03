@@ -27,7 +27,7 @@
     </div>
     <div class="container">
       <div class = "text-center"><div id="spotimg"></div></div>
-      <form name="WSPRAnaly" method="post" onsubmit="return checkLog()" action='/cgi-bin/fleonline.py'>
+      <form name="WSPRAnaly" method="post" action=''>
     	<div class="form-group" style="justify-content:start;margin-bottom:2px;">
 	  <label>Title:<input type="text" id="title" name="title" value="untitled"></label><p>
 	  <table class="table table-condensed">
@@ -41,62 +41,81 @@
 	    </thead>
 	    <tbody>
 	      <tr>
-		<td><div><input type="checkbox" id="check1" name="check1">
-		<input type="text" id="plot1" name="plot1"></div></td>
+		<td><div>
+		    <input type="checkbox" id="check1" name="check1">
+		    <input type="text" id="plot1" name="plot1"></div></td>
 		<td><div><select id="color1" name="color1">
 		      <option value="r">Red</option>
 		      <option value="b">Blue</option>
 		      <option value="g">Green</option>
 		      <option value="c">Cyan</option>
+		    </select>
 		</div></td>
-		<td><div><select id="from1" name="from1">
+		<td><div><select id="from1" name="from1"></select>
 		</div></td>
-		<td><div><select id="to1" name="to1">
+		<td><div><select id="to1" name="to1"></select>
 		</div></td>
 	      </tr>
 	      <tr>
-		<td><div><input type="checkbox" id="check2" name="check2">
-		<input type="text" id="plot2" name="plot2"></div></td>
+		<td><div>
+		    <input type="checkbox" id="check2" name="check2">
+		    <input type="text" id="plot2" name="plot2"></div></td>
 		<td><div><select id="color2" name="color2">
 		      <option value="b">Blue</option>
 		      <option value="g">Green</option>
 		      <option value="c">Cyan</option>
 		      <option value="r">Red</option>
+		    </select>
 		</div></td>
-		<td><div><select id="from2" name="from2">
+		<td><div><select id="from2" name="from2"></select>
 		</div></td>
-		<td><div><select id="to2" name="to2">
+		<td><div><select id="to2" name="to2"></select>
 		</div></td>
 	      </tr>
 	      <tr>
-		<td><div><input type="checkbox" id="check3" name="check3">
-		<input type="text" id="plot3" name="plot3"></div></td>
+		<td><div>
+		    <input type="checkbox" id="check3" name="check3">
+		    <input type="text" id="plot3" name="plot3"></div></td>
 		<td><div><select id="color3" name="color3">
 		      <option value="g">Green</option>
 		      <option value="c">Cyan</option>
 		      <option value="r">Red</option>
 		      <option value="b">Blue</option>
+		    </select>
 		</div></td>
-		<td><div><select id="from3" name="from3">
+		<td><div><select id="from3" name="from3"></select>
 		</div></td>
-		<td><div><select id="to3" name="to3">
+		<td><div><select id="to3" name="to3"></select>
 		</div></td>
 	      </tr>
 	      <tr>
-		<td><div><input type="checkbox" id="check4" name="check4">
-		<input type="text" id="plot4" name="plot4"></div></td>
+		<td><div>
+		    <input type="checkbox" id="check4" name="check4">
+		    <input type="text" id="plot4" name="plot4"></div></td>
 		<td><div><select id="color4" name="color4">
 		      <option value="c">Cyan</option>
 		      <option value="r">Red</option>
 		      <option value="b">Blue</option>
 		      <option value="g">Green</option>
+		    </select>
 		</div></td>
-		<td><div><select id="from4" name="from4">
+		<td><div><select id="from4" name="from4"></select>
 		</div></td>
-		<td><div><select id="to4" name="to4">
+		<td><div><select id="to4" name="to4"></select>
 		</div></td>
 	      </tr>
-
+	      <tr>
+		<td>Min. Distance:</td>
+		<td><input type="number" id="min" name="min" value="0">km</td>
+	      </tr>
+	      <tr>
+		<td>Max. Distance:</td>
+		<td><input type="number" id="max" name="max" value="20000">km</td>
+	      </tr>
+	      <tr>
+		<td>Annotation:</td>
+		<td><input type="checkbox" id="label" name="label" value="20000"></td>
+	      </tr>
 	  </table>
 	</div>
 	<div class="form-group d-flex" style="justify-content:center;margin-bottom:2px;">
@@ -182,16 +201,6 @@ function getTimelist(text) {
     }
 }
 
-function checkLog() {
-    if (!textinterpreted) {
-	if(confirm("変換されていません\nCSV生成しますか？") == false)
-	    return false;
-    }
-    textdirty = false;
-    textinterpreted = true;
-    return true;
-}
-
 function clearLog() {
     var editor = document.getElementById("edittext");
     editor.value = "";
@@ -211,6 +220,14 @@ function clearLog() {
     const tl = document.getElementById("title");
     tl.value = 'untitled';
     tl.textContent = 'untitled';
+    const dmin = document.getElementById("min");
+    dmin.value = '0';
+    dmin.textContent = '0';
+    const dmax = document.getElementById("max");
+    dmax.value = '20000';
+    dmax.textContent = '20000';
+    const lb = document.getElementById("label");
+    lb.checked = false;
 }
 
   
@@ -224,13 +241,20 @@ function string_to_buffer(src) {
 function clickSubmit() {
     var editor = document.getElementById("edittext");
     var title = document.getElementById("title");
+    var dmin = document.getElementById("min");
+    var dmax = document.getElementById("max");
+    var lb = document.getElementById("label");
+    
     var jsondata ={'title':title.value,
 		   'width':window.innerWidth,
 		   'spots':editor.value,
+		   'min':dmin.value,
+		   'max':dmax.value,
+		   'label':lb.checked,
 		   'plots':[]};
 
     for(n = 1; n <= 4; n++) {
-	chk = document.getElementById('check'+n);
+	var chk = document.getElementById('check'+n);
 	if (chk.checked) {
 	    label  = document.getElementById('plot'+n).value;
 	    color =document.getElementById('color'+n).value;
@@ -247,7 +271,8 @@ function clickSubmit() {
     }
 
     $.post("/cgi-bin/wspr-analysis.py",{"arg":JSON.stringify(jsondata)},
-	   function(data, status, xhr) {
+	   function(data, status, xhr){
+	       console.log(data);
 	       if (status == "success") {
 		   const elem = document.getElementById("spotimg");
 		   elem.innerHTML = '';

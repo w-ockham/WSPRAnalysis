@@ -25,8 +25,13 @@ def WSPRspots(jstr):
     
     plots = []
     for p in js['plots']:
-        fm = int(datetime.strptime( p['from'], '%Y-%m-%d %H:%M').timestamp())
-        to = int(datetime.strptime( p['to'], '%Y-%m-%d %H:%M').timestamp())
+        try:
+            fm = int(datetime.strptime( p['from'], '%Y-%m-%d %H:%M').timestamp())
+            to = int(datetime.strptime( p['to'], '%Y-%m-%d %H:%M').timestamp())
+        except ValueError:
+            fm = int(datetime.strptime( p['from'], '%Y/%m/%d %H:%M:%S').timestamp())
+            to = int(datetime.strptime( p['to'], '%Y/%m/%d %H:%M:%S').timestamp())
+            
         plots.append(
             { 'label':p['label'], 'color':p['color'], 'from':fm, 'to':to, 
             'repo':[], 'dist':[], 'snr':[],
@@ -35,6 +40,10 @@ def WSPRspots(jstr):
 
     plots.sort(key=lambda x: x['from'])
 
+    mindist = int(js['min'])
+    maxdist = int(js['max'])
+    addlabel = js['label']
+    
     wsprspot = []
     reporter = {}
 
@@ -44,9 +53,13 @@ def WSPRspots(jstr):
             call, freq, snr  = col[2], col[3], col[4]
             dft, grid, pwr = col[5], col[6], col[7] 
             rp, rgrid, km, az  = col[8], col[9], col[10], col[11]
-            ts =  int(datetime.strptime(col[0]+' '+col[1], '%Y-%m-%d %H:%M').timestamp())
+            try:
+                ts =  int(datetime.strptime(col[0]+' '+col[1], '%Y-%m-%d %H:%M').timestamp())
+            except ValueError:
+                ts =  int(datetime.strptime(col[0]+' '+col[1], '%Y/%m/%d %H:%M:%S').timestamp())
             reporter[rp] = { 'distance': int(km), 'azimath':int(az) }
-            wsprspot.append({ 'ts':ts, 'snr':int(snr),'repo':rp})
+            if int(km)>= mindist and int(km) <= maxdist:
+                wsprspot.append({ 'ts':ts, 'snr':int(snr),'repo':rp})
 
     wsprspot.sort(key=lambda x: x['ts'])
 
@@ -118,10 +131,15 @@ def WSPRspots(jstr):
         x = p['dist']
         y = p['snr']
         axes.scatter(x, y, label=p['label']+f" {len(p['snr'])}spots",c=p['color'],marker='o',alpha=0.8)
-        x = p['avgdist']
-        y = p['avgsnr']
-        axes.plot(x, y,c=p['color'],marker='x',alpha=0.2)
 
+        if addlabel:
+            for i,label in enumerate(p['repo']):
+                axes.annotate(label, (x[i], y[i]))
+
+        xa = p['avgdist']
+        ya = p['avgsnr']
+        axes.plot(xa, ya, c=p['color'],marker='x', alpha=0.2)
+                          
     axes.set_title(js['title'])
     axes.set_xlabel('Distance (km)')
     axes.set_ylabel('SNR (dB)')
